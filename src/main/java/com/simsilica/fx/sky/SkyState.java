@@ -40,12 +40,7 @@ import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingSphere;
-import com.jme3.export.InputCapsule;
-import com.jme3.export.JmeExporter;
-import com.jme3.export.JmeImporter;
-import com.jme3.export.OutputCapsule;
-import com.jme3.export.Savable;
-import com.jme3.material.MatParam;
+import com.jme3.export.*;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -63,6 +58,8 @@ import com.simsilica.fx.geom.TruncatedDome;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.core.VersionedReference;
 import com.simsilica.lemur.event.BaseAppState;
+import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
 
 import java.io.IOException;
 
@@ -74,12 +71,13 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     public static final int EARTH_RADIUS = 6378100;
 
     public static final ColorRGBA SUN_COLOR = new ColorRGBA(1, 1, 0.9f, 1);
-    public static final ColorRGBA FLAT_COLOR = new ColorRGBA(0.5f, 0.5f, 1f, 1);
+    public static final ColorRGBA SKY_COLOR = new ColorRGBA(0.5f, 0.5f, 1f, 1);
     public static final ColorRGBA GROUND_COLOR = new ColorRGBA(0.25f, 0.25f, 0.3f, 1);
 
     /**
      * The atmospheric parameters.
      */
+    @NotNull
     protected AtmosphericParameters atmosphericParms;
 
     /**
@@ -115,9 +113,18 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     protected ColorRGBA lightingColor;
 
     /**
-     * The flat material.
+     * The ground color.
      */
-    protected Material flatMaterial;
+    protected ColorRGBA groundColor;
+    /**
+     * The sun color.
+     */
+    protected ColorRGBA sunColor;
+
+    /**
+     * The sky color.
+     */
+    protected ColorRGBA flatColor;
 
     /**
      * The atmospheric material.
@@ -135,6 +142,11 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     protected Material sunMaterial;
 
     /**
+     * The flat material.
+     */
+    protected Material flatMaterial;
+
+    /**
      * The dome inner radius.
      */
     protected float domeInnerRadius;
@@ -148,8 +160,25 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     protected boolean flatShaded;
 
     public SkyState() {
+        this(null, false);
         this.temp1 = new Vector3f();
+    }
+
+    public SkyState(@Nullable final ColorRGBA groundColor) {
+        this(groundColor, groundColor != null);
+    }
+
+    public SkyState(@Nullable final ColorRGBA groundColor, boolean showGroundDisc) {
         this.lightingColor = new ColorRGBA(1, 1, 1, 1);
+        this.groundColor = new ColorRGBA(GROUND_COLOR);
+        this.sunColor = new ColorRGBA(SUN_COLOR);
+        this.flatColor = new ColorRGBA(SKY_COLOR);
+        this.showGround = showGroundDisc;
+
+        if (groundColor != null) {
+            this.groundColor.set(groundColor);
+        }
+
         this.domeInnerRadius = 2000;
         this.domeOuterRadius = 2000 * 1.025f;
         this.atmosphericParms = new AtmosphericParameters();
@@ -165,7 +194,6 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
         this.sunGeometry = new Geometry("Sun", sunSphere);
         this.skyGeometry = new Geometry("Sky", skyDome);
         this.skyGeometry.setModelBound(new BoundingSphere(Float.POSITIVE_INFINITY, Vector3f.ZERO));
-        this.skyGeometry.setMaterial(flatMaterial);
         this.skyGeometry.setQueueBucket(Bucket.Sky);
         this.skyGeometry.setCullHint(CullHint.Never);
         this.groundGeometry = new Geometry("ground", ground);
@@ -231,15 +259,14 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
      * @return the ground color.
      */
     public ColorRGBA getGroundColor() {
-        if (groundMaterial == null) return null;
-        final MatParam matParam = groundMaterial.getParam("GroundColor");
-        return (ColorRGBA) matParam.getValue();
+        return groundColor;
     }
 
     /**
      * @param groundColor the ground color.
      */
     public void setGroundColor(final ColorRGBA groundColor) {
+        this.groundColor.set(groundColor);
         if (groundMaterial == null) return;
         groundMaterial.setParam("GroundColor", VarType.Vector4, groundColor);
     }
@@ -248,15 +275,14 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
      * @return the sun color.
      */
     public ColorRGBA getSunColor() {
-        if (sunMaterial == null) return null;
-        final MatParam matParam = sunMaterial.getParam("Color");
-        return (ColorRGBA) matParam.getValue();
+        return sunColor;
     }
 
     /**
      * @param sunColor the sun color.
      */
     public void setSunColor(final ColorRGBA sunColor) {
+        this.sunColor.set(sunColor);
         if (sunMaterial == null) return;
         sunMaterial.setParam("Color", VarType.Vector4, sunColor);
     }
@@ -265,15 +291,14 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
      * @return the flat color.
      */
     public ColorRGBA getFlatColor() {
-        if (flatMaterial == null) return null;
-        final MatParam matParam = flatMaterial.getParam("Color");
-        return (ColorRGBA) matParam.getValue();
+        return flatColor;
     }
 
     /**
      * @param flatColor the flat color.
      */
     public void setFlatColor(final ColorRGBA flatColor) {
+        this.flatColor.set(flatColor);
         if (flatMaterial == null) return;
         flatMaterial.setParam("Color", VarType.Vector4, flatColor);
     }
@@ -321,12 +346,12 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
         final Vector3f lightDirection = lightDir.get();
 
         if (sunMaterial == null) {
-            sunMaterial = guiGlobals.createMaterial(SUN_COLOR.clone(), false).getMaterial();
+            sunMaterial = guiGlobals.createMaterial(sunColor, false).getMaterial();
             sunGeometry.setMaterial(sunMaterial);
         }
 
         if (flatMaterial == null) {
-            flatMaterial = guiGlobals.createMaterial(FLAT_COLOR.clone(), false).getMaterial();
+            flatMaterial = guiGlobals.createMaterial(flatColor, false).getMaterial();
         }
 
         if (atmosphericMaterial == null) {
@@ -337,7 +362,7 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
 
         if (groundMaterial == null) {
             groundMaterial = new Material(assetManager, "MatDefs/GroundAtmospherics.j3md");
-            groundMaterial.setColor("GroundColor", GROUND_COLOR.clone());
+            groundMaterial.setColor("GroundColor", groundColor);
             groundMaterial.setBoolean("FollowCamera", true);
             groundMaterial.setBoolean("UseScattering", true);
             groundMaterial.setFloat("GroundScale", 10);
@@ -381,6 +406,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
         if (isShowGroundGeometry()) {
             rootNode.attachChild(groundGeometry);
         }
+        resetMaterials();
+        resetGround();
     }
 
     @Override
@@ -405,12 +432,15 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
         skyGeometry = cloner.clone(skyGeometry);
         sunGeometry = cloner.clone(sunGeometry);
         groundGeometry = cloner.clone(groundGeometry);
-        lightingColor = cloner.clone(lightingColor);
         flatMaterial = cloner.clone(flatMaterial);
         atmosphericMaterial = cloner.clone(atmosphericMaterial);
         groundMaterial = cloner.clone(groundMaterial);
         sunMaterial = cloner.clone(sunMaterial);
         atmosphericParms = cloner.clone(atmosphericParms);
+        lightingColor = cloner.clone(lightingColor);
+        sunColor = cloner.clone(sunColor);
+        flatColor = cloner.clone(flatColor);
+        groundColor = cloner.clone(groundColor);
     }
 
     @Override
@@ -419,7 +449,6 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
         capsule.write(skyGeometry, "skyGeometry", null);
         capsule.write(sunGeometry, "sunGeometry", null);
         capsule.write(groundGeometry, "groundGeometry", null);
-        capsule.write(lightingColor, "lightingColor", null);
         capsule.write(flatMaterial, "flatMaterial", null);
         capsule.write(atmosphericMaterial, "atmosphericMaterial", null);
         capsule.write(groundMaterial, "groundMaterial", null);
@@ -429,6 +458,10 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
         capsule.write(showGround, "showGround", false);
         capsule.write(domeInnerRadius, "domeInnerRadius", 0);
         capsule.write(domeOuterRadius, "domeOuterRadius", 0);
+        capsule.write(lightingColor, "lightingColor", null);
+        capsule.write(flatColor, "flatColor", null);
+        capsule.write(sunColor, "sunColor", null);
+        capsule.write(groundColor, "groundColor", null);
     }
 
     @Override
@@ -447,5 +480,20 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
         showGround = capsule.readBoolean("showGround", false);
         domeInnerRadius = capsule.readFloat("domeInnerRadius", 0);
         domeOuterRadius = capsule.readFloat("domeOuterRadius", 0);
+        flatColor = (ColorRGBA) capsule.readSavable("flatColor", null);
+        sunColor = (ColorRGBA) capsule.readSavable("sunColor", null);
+        groundColor = (ColorRGBA) capsule.readSavable("groundColor", null);
+
+        if (groundMaterial != null) {
+            groundMaterial.setColor("GroundColor", groundColor);
+        }
+
+        if (flatMaterial != null) {
+            flatMaterial.setParam("Color", VarType.Vector4, flatColor);
+        }
+
+        if (sunMaterial != null) {
+            sunMaterial.setParam("Color", VarType.Vector4, sunColor);
+        }
     }
 }
