@@ -55,7 +55,6 @@ import com.jme3.util.clone.Cloner;
 import com.jme3.util.clone.JmeCloneable;
 import com.simsilica.fx.LightingState;
 import com.simsilica.fx.geom.TruncatedDome;
-import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.core.VersionedReference;
 import com.simsilica.lemur.event.BaseAppState;
 import com.sun.istack.internal.NotNull;
@@ -330,12 +329,6 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
 
         final AssetManager assetManager = app.getAssetManager();
 
-        if (GuiGlobals.getInstance() == null) {
-            GuiGlobals.initialize(app);
-        }
-
-        final GuiGlobals guiGlobals = GuiGlobals.getInstance();
-
         if (rootNode == null) {
             rootNode = ((SimpleApplication) app).getRootNode();
         }
@@ -346,12 +339,12 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
         final Vector3f lightDirection = lightDir.get();
 
         if (sunMaterial == null) {
-            sunMaterial = guiGlobals.createMaterial(sunColor, false).getMaterial();
+            sunMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
             sunGeometry.setMaterial(sunMaterial);
         }
 
         if (flatMaterial == null) {
-            flatMaterial = guiGlobals.createMaterial(flatColor, false).getMaterial();
+            flatMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         }
 
         if (atmosphericMaterial == null) {
