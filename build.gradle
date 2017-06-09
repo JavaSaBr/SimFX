@@ -49,6 +49,7 @@ dependencies {
     compile "com.simsilica:lemur-props:1.0.1"
     
     compile 'org.slf4j:slf4j-api:1.7.13'
+    compile group: 'org.jetbrains', name: 'annotations', version: '15.0'
 }
 
 checkstyle {
