@@ -324,6 +324,11 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
         }
     }
 
+    @Nullable
+    public Material getGroundMaterial() {
+        return groundMaterial;
+    }
+
     @Override
     protected void initialize(final Application app) {
 

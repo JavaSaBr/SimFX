@@ -412,7 +412,7 @@ MaterialDef Scattered Phong Lighting {
     }
 
     Technique {
-        LightMode FixedPipeline
+        LightMode StaticPass
     }
 
     Technique Glow {
@@ -457,10 +457,6 @@ MaterialDef Scattered Phong Lighting {
             SPECULARMAP : SpecularMap
             PARALLAXMAP : ParallaxMap
         }
-    }
-
-    Technique {
-        LightMode FixedPipeline
     }
 
     Technique Glow {

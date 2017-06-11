@@ -104,15 +104,15 @@ public class SkySettingsState extends BaseAppState {
         settings.addFloatProperty("Mie Constant(x10)", this, "mieConstant", 0, 1, 0.001f);
         settings.addFloatProperty("MPA Factor", atmosphericParms, "miePhaseAsymmetryFactor", -1.5f, 0, 0.001f);
         settings.addFloatProperty("Flattening", atmosphericParms, "skyFlattening", 0, 1, 0.01f);
-        settings.addFloatProperty("Red Wavelength (nm)", atmosphericParms, "redWavelength", 0, 1, 0.001f);
-        settings.addFloatProperty("Green Wavelength (nm)", atmosphericParms, "greenWavelength", 0, 1, 0.001f);
-        settings.addFloatProperty("Blue Wavelength (nm)", atmosphericParms, "blueWavelength", 0, 1, 0.001f);
+        settings.addFloatProperty("Red Wavelength (nm)", atmosphericParms, "redWaveLength", 0, 1, 0.001f);
+        settings.addFloatProperty("Green Wavelength (nm)", atmosphericParms, "greenWaveLength", 0, 1, 0.001f);
+        settings.addFloatProperty("Blue Wavelength (nm)", atmosphericParms, "blueWaveLength", 0, 1, 0.001f);
 
         settings.addFloatProperty("Time", getState(LightingState.class), "timeOfDay", -0.1f, 1.1f, 0.01f);
         settings.addFloatProperty("Orientation", getState(LightingState.class), "orientation", 0f, FastMath.TWO_PI, 0.01f);
         
         settings.addBooleanProperty("Flat Shaded", getState(SkyState.class), "flatShaded");
-        settings.addBooleanProperty("Show Ground Disc", getState(SkyState.class), "showGroundDisc");
+        settings.addBooleanProperty("Show Ground Disc", getState(SkyState.class), "showGroundGeometry");
     }
 
     @Override
