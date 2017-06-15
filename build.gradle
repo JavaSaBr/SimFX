@@ -15,10 +15,10 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'checkstyle'
 
-version='1.0.1-SNAPSHOT'
+version='1.0.2'
 group='com.simsilica'
 
-ext.jmeVersion = "3.1.0-alpha4" 
+ext.jmeVersion = "3.1.0-stable"
 
 repositories {
     mavenLocal()
