@@ -63,6 +63,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 
 /**
+ * The type Sky state.
+ *
  * @author Paul Speed
  */
 public class SkyState extends BaseAppState implements Savable, Cloneable, JmeCloneable {
@@ -158,15 +160,29 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     protected boolean showGround;
     protected boolean flatShaded;
 
+    /**
+     * Instantiates a new Sky state.
+     */
     public SkyState() {
         this(null, false);
         this.temp1 = new Vector3f();
     }
 
+    /**
+     * Instantiates a new Sky state.
+     *
+     * @param groundColor the ground color
+     */
     public SkyState(@Nullable final ColorRGBA groundColor) {
         this(groundColor, groundColor != null);
     }
 
+    /**
+     * Instantiates a new Sky state.
+     *
+     * @param groundColor    the ground color
+     * @param showGroundDisc the show ground disc
+     */
     public SkyState(@Nullable final ColorRGBA groundColor, boolean showGroundDisc) {
         this.lightingColor = new ColorRGBA(1, 1, 1, 1);
         this.groundColor = new ColorRGBA(GROUND_COLOR);
@@ -202,6 +218,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Gets atmospheric parameters.
+     *
      * @return the atmospheric parameters.
      */
     public AtmosphericParameters getAtmosphericParameters() {
@@ -209,6 +227,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Sets sky parent.
+     *
      * @param node the parent node.
      */
     public void setSkyParent(final Node node) {
@@ -216,6 +236,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Gets sky parent.
+     *
      * @return the parent node.
      */
     public Node getSkyParent() {
@@ -223,6 +245,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Sets flat shaded.
+     *
      * @param flatShaded true if need to use flat shader.
      */
     public void setFlatShaded(final boolean flatShaded) {
@@ -232,6 +256,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Is flat shaded boolean.
+     *
      * @return true if need to use flat shader.
      */
     public boolean isFlatShaded() {
@@ -239,6 +265,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Sets show ground geometry.
+     *
      * @param showGround true if need to show ground geometry.
      */
     public void setShowGroundGeometry(final boolean showGround) {
@@ -248,6 +276,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Is show ground geometry boolean.
+     *
      * @return true if need to show ground geometry.
      */
     public boolean isShowGroundGeometry() {
@@ -255,6 +285,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Gets ground color.
+     *
      * @return the ground color.
      */
     public ColorRGBA getGroundColor() {
@@ -262,6 +294,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Sets ground color.
+     *
      * @param groundColor the ground color.
      */
     public void setGroundColor(final ColorRGBA groundColor) {
@@ -271,6 +305,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Gets sun color.
+     *
      * @return the sun color.
      */
     public ColorRGBA getSunColor() {
@@ -278,6 +314,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Sets sun color.
+     *
      * @param sunColor the sun color.
      */
     public void setSunColor(final ColorRGBA sunColor) {
@@ -287,6 +325,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Gets flat color.
+     *
      * @return the flat color.
      */
     public ColorRGBA getFlatColor() {
@@ -294,6 +334,8 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
     }
 
     /**
+     * Sets flat color.
+     *
      * @param flatColor the flat color.
      */
     public void setFlatColor(final ColorRGBA flatColor) {
@@ -302,7 +344,13 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
         flatMaterial.setParam("Color", VarType.Vector4, flatColor);
     }
 
+    /**
+     * Reset materials.
+     */
     protected void resetMaterials() {
+        if (!isEnabled()) return;
+        if (groundGeometry == null || flatMaterial == null || atmosphericMaterial == null) return;
+
         if (isFlatShaded()) {
             skyGeometry.setMaterial(flatMaterial);
             sunGeometry.setCullHint(CullHint.Inherit);
@@ -314,8 +362,11 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
         }
     }
 
+    /**
+     * Reset ground.
+     */
     protected void resetGround() {
-        if (groundGeometry == null) return;
+        if (groundGeometry == null || rootNode == null) return;
         if (!isEnabled()) return;
         if (isShowGroundGeometry()) {
             rootNode.attachChild(groundGeometry);
@@ -324,6 +375,11 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
         }
     }
 
+    /**
+     * Gets ground material.
+     *
+     * @return the ground material
+     */
     @Nullable
     public Material getGroundMaterial() {
         return groundMaterial;
@@ -338,8 +394,20 @@ public class SkyState extends BaseAppState implements Savable, Cloneable, JmeClo
             rootNode = ((SimpleApplication) app).getRootNode();
         }
 
-        final LightingState state = getState(LightingState.class);
-        lightDir = state.getLightDirRef();
+        final LightingState lightingState = getState(LightingState.class);
+        final VersionedReference<Vector3f> lightDirRef = lightingState.getLightDirRef();
+
+        init(lightDirRef, assetManager);
+    }
+
+    /**
+     * External initialize this app state.
+     *
+     * @param lightDir     the light direction reference.
+     * @param assetManager the asset manager.
+     */
+    public void init(@NotNull final VersionedReference<Vector3f> lightDir, @NotNull final AssetManager assetManager) {
+        this.lightDir = lightDir;
 
         final Vector3f lightDirection = lightDir.get();
 
