@@ -254,7 +254,6 @@ public class AtmosphericParameters implements Cloneable, JmeCloneable, Savable {
         material.setVector3("SunPosition", sunPosition);
         material.setVector3("InvWavelengthsKrESun", invPow4WavelengthsKrESun);
         material.setVector3("KWavelengths4PI", kWavelengths4PI);
-
         material.setFloat("Exposure", groundExposure);
         material.setFloat("InnerRadius", innerRadius);
         material.setFloat("RadiusScale", 1 / (outerRadius - innerRadius));

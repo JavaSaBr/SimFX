@@ -17,16 +17,13 @@ attribute vec3 inNormal;
 void main() {
 
     vec4 modelSpacePos = vec4(inPosition, 1.0);
-        
-    
     vec4 wPos = g_WorldMatrix * modelSpacePos;
     
     #ifdef FOLLOW_CAMERA
         wPos.xyz += g_CameraPosition;
     #endif
-    calculateVertexGroundScattering(wPos.xyz, g_CameraPosition, m_GroundScale);
 
-    
+    calculateVertexGroundScattering(wPos.xyz, g_CameraPosition, m_GroundScale);
     gl_Position = g_ViewProjectionMatrix * wPos;
 }
 

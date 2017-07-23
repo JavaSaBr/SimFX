@@ -1,8 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'maven'
 
-version='1.0.4'
-group='com.simsilica'
+version = '1.0.5'
+group = 'com.simsilica'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -16,8 +16,8 @@ repositories {
 
 // Version meta-data
 ext {
-    releaseDescription = "SimFX ${project.version}"    
-    releaseVcsTag = "${project.name}-v${project.version}"    
+    releaseDescription = "SimFX ${project.version}"
+    releaseVcsTag = "${project.name}-v${project.version}"
 }
 
 // Project-wide meta-data
@@ -29,14 +29,12 @@ ext {
     issueTrackerUrl = 'https://github.com/Simsilica/SimFX/issues'
 }
 
-
 // In this section you declare the dependencies for your production and test code
 dependencies {
     compile "org.jmonkeyengine:jme3-core:$jmeVersion"
-    
+
     compile "com.simsilica:lemur:1.9.1"
-    compile "com.simsilica:lemur-props:1.0.1"
-    
+
     compile 'org.slf4j:slf4j-api:1.7.13'
     compile group: 'org.jetbrains', name: 'annotations', version: '15.0'
 }
@@ -50,7 +48,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
-  
+
 artifacts {
     archives sourcesJar
     archives javadocJar
@@ -59,7 +57,7 @@ artifacts {
 // To specify a license in the pom:
 install {
     repositories.mavenInstaller {
-        pom.version = '1.0.4'
+        pom.version = version
         pom.artifactId = 'sim-fx'
     }
 }

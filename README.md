@@ -30,7 +30,7 @@ allprojects {
 }
 
 dependencies {
-    compile 'com.github.JavaSaBr:SimFX:1.0.4'
+    compile 'com.github.JavaSaBr:SimFX:1.0.5'
 }
 ```
 
@@ -51,6 +51,6 @@ dependencies {
     <dependency>
         <groupId>com.github.JavaSaBr</groupId>
         <artifactId>SimFX</artifactId>
-        <version>1.0.4</version>
+        <version>1.0.5</version>
     </dependency>
 ```
